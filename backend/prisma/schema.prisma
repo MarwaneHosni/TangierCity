@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hotel {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String
+  image         String
+  location      String
+  rating        Int
+  pricePerNight Float
+  checkInTime   DateTime
+  checkOutTime  DateTime
+  category      String
+}
+
+model Restaurant {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String
+  image        String
+  location     String
+  rating       Int
+  averagePrice Float
+  openTime     DateTime
+  closeTime    DateTime
+  category     String
+}
+
+model Attraction {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String
+  image        String
+  location     String
+  rating       Int
+  averagePrice Float
+  openTime     DateTime
+  closeTime    DateTime
+  category     String
+}
+
+model Atm {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  location    String
+  available   Boolean
+  openTime    DateTime
+  closeTime   DateTime
+  category    String
+}
+
+model Theater {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String
+  image        String
+  location     String
+  rating       Int
+  averagePrice Float
+  openTime     DateTime
+  closeTime    DateTime
+  category     String
+}
+
+model University {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  location    String
+  rating      Int
+  tuitionFee  Float
+  openTime    DateTime
+  closeTime   DateTime
+  category    String
+}
+
+model Library {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  location    String
+  rating      Int
+  openTime    DateTime
+  closeTime   DateTime
+  category    String
+}
+
+model EducationCenter {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  location    String
+  rating      Int
+  openTime    DateTime
+  closeTime   DateTime
+  category    String
+}
+
+model Job {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  company     String
+  location    String
+  pay         Float
+  timePost    DateTime  @default(now())
+  categoryId  Int
+  category    JobCategory @relation(fields: [categoryId], references: [id])
+  experience  String
+  jobSkills   JobSkill[]
+}
+
+model Skill {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  jobSkills   JobSkill[]
+}
+
+model JobSkill {
+  jobId   Int
+  skillId Int
+  job     Job   @relation(fields: [jobId], references: [id])
+  skill   Skill @relation(fields: [skillId], references: [id])
+
+  @@id([jobId, skillId])
+}
+
+model Company {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  location    String
+  rating      Int
+  categoryId  Int
+  category    JobCategory @relation(fields: [categoryId], references: [id])
+}
+
+model JobCategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  jobs       Job[]     // one-to-many
+  companies  Company[] // one-to-many
+}
+
+model BusinessCenter {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  location    String
+  rating      Int
+  openTime    DateTime
+  closeTime   DateTime
+  industryId  Int
+  industry    Industry @relation(fields: [industryId], references: [id])
+}
+
+model Startup {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  image       String
+  location    String
+  rating      Int
+  openTime    DateTime
+  closeTime   DateTime
+  industryId  Int
+  industry    Industry @relation(fields: [industryId], references: [id])
+}
+
+model Industry {
+  id              Int              @id @default(autoincrement())
+  name            String
+  businessCenters BusinessCenter[]
+  startups        Startup[]
+}
