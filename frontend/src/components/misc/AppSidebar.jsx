@@ -1,3 +1,4 @@
+import { useAuth } from '@/auth/AuthContext';
 import {
   Sidebar,
   SidebarProvider,
@@ -9,16 +10,41 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from '@/components/ui/sidebar';
-import { User } from 'lucide';
-import { Menu, Home, Hotel, LucideForkKnifeCrossed, Music, DollarSign, Theater, University, Library, School, BriefcaseBusiness, CompassIcon, Factory, Search, Building, StepBack, BuildingIcon, Building2, Shield, DoorOpen, User2 } from 'lucide-react';
+import {
+  Menu,
+  Home,
+  Hotel,
+  LucideForkKnifeCrossed,
+  Music,
+  DollarSign,
+  Theater,
+  University,
+  Library,
+  School,
+  BriefcaseBusiness,
+  CompassIcon,
+  Factory,
+  Search,
+  Building,
+  StepBack,
+  BuildingIcon,
+  Building2,
+  Shield,
+  DoorOpen,
+  User2,
+} from 'lucide-react';
+
 
 export default function App() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   return (
     <SidebarProvider>
       <div className='flex'>
         {/* Sidebar */}
         <Sidebar side='left' collapsible='offcanvas' variant='sidebar'>
-          <SidebarHeader className="flex flex-row items-center p-6 border-b-2 border-gray-200 bg-blue-200/20">
+          <SidebarHeader className='flex flex-row items-center p-6 border-b-2 border-gray-200 bg-blue-200/20'>
             <div>
               <DoorOpen className='w-10 h-10 text-2xl text-blue-600 bg-blue-200 p-2 rounded-xl' />
             </div>
@@ -147,15 +173,27 @@ export default function App() {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter className="flex flex-row items-center p-6 border-t-2 border-gray-200 bg-blue-200/20">
+          {user ? (
+            <SidebarFooter className='flex flex-row items-center p-6 border-t-2 border-gray-200 bg-blue-200/20'>
               <div>
                 <User2 className='w-10 h-10 text-2xl text-blue-600 bg-blue-200 p-2 rounded-xl' />
               </div>
               <div>
-                <h1 className='text-md font-bold text-blue-600'>John Doe</h1>
-                <h2 className='text-sm text-gray-600'>Administrator</h2>
+                <h1 className='text-md font-bold text-blue-600'>{user.email}</h1>
+                {isAdmin ? <h2 className='text-sm text-gray-600'>Admin</h2> : <h2 className='text-sm text-gray-600'>User</h2>}
               </div>
-          </SidebarFooter>
+            </SidebarFooter>
+          ) : (
+            <SidebarFooter className='flex flex-row items-center p-6 border-t-2 border-gray-200 bg-blue-200/20'>
+              <div>
+                <User2 className='w-10 h-10 text-2xl text-blue-600 bg-blue-200 p-2 rounded-xl' />
+              </div>
+              <div>
+                <h1 className='text-md font-bold text-blue-600'>Guest</h1>
+                <h2 className='text-sm text-gray-600'>Log-In for additional features</h2>
+              </div>
+            </SidebarFooter>
+          )}
 
           <SidebarTrigger className=' absolute top-4 right-[-2rem] w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-tr-xl rounded-br-xl shadow-lg hover:bg-blue-700 transition'>
             <Menu className='w-4 h-4' />

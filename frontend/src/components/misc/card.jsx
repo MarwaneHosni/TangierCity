@@ -14,6 +14,7 @@ import {
   LucideEye,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '../../auth/AuthContext.jsx';
 
 /**
  * @typedef {Object} DataCardProps
@@ -43,10 +44,17 @@ export default function DataCard({
   price,
   tags = [],
   variant,
+  hotel,
   onView,
   onEdit,
   onDelete,
 }) {
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
+  
+
   const getRatingLabel = (rating) => {
     if (rating === 5) return { label: 'Excellent', className: 'bg-green-100 text-green-800' };
     if (rating >= 4) return { label: 'Good', className: 'bg-blue-100 text-blue-800' };
@@ -56,7 +64,7 @@ export default function DataCard({
   };
 
   return (
-    <Card className='group overflow-hidden hover:shadow-card-hover transition-all duration-300 animate-scale-in border-sm border-gray-50 shadow-md'>
+    <Card className='group overflow-hidden hover:shadow-card-hover transition-all duration-300 animate-scale-in border-sm border-gray-200 shadow-md'>
       {image && (
         <div className='relative h-48 overflow-hidden'>
           <img
@@ -134,15 +142,16 @@ export default function DataCard({
         )}
       </CardContent>
 
-      <CardFooter className='pt-0 gap-2'>
+      {isAdmin && (
+          <CardFooter className='pt-0 gap-2'>
         {onView && (
-          <Button variant='ghost' size='sm' onClick={onView} className='flex-1'>
+          <Button variant='ghost' size='sm' onClick={onView} className='flex-1 bg-gradient-to-tr from-blue-600 to-blue-400 text-white rounded-xl'>
             <Eye className='w-4 h-4 mr-1' />
             View
           </Button>
         )}
         {onEdit && (
-          <Button variant='ghost' size='sm' onClick={onEdit}>
+          <Button variant='ghost' size='sm' onClick={() => onEdit(hotel)} className='text-primary hover:text-primary bg-yellow-300/90 hover:bg-yellow-400/95 rounded-xl'>
             <Edit className='w-4 h-4' />
           </Button>
         )}
@@ -151,12 +160,15 @@ export default function DataCard({
             variant='ghost'
             size='sm'
             onClick={onDelete}
-            className='text-destructive hover:text-destructive'
+            className='text-destructive hover:text-destructive bg-red-300/90 hover:bg-red-400/95 rounded-xl'
           >
             <Trash2 className='w-4 h-4' />
           </Button>
         )}
       </CardFooter>
+      )
+       
+      }
     </Card>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../../../services/api.js';
 import DataCard from '../../misc/card.jsx';
-import { LucideHouse, LucidePlus, LucideSearch } from 'lucide-react';
+import { Cross, LucideHouse, LucidePlus, LucideSearch, X } from 'lucide-react';
 import { Input } from '@/components/ui/input.jsx';
 import {
   Select,
@@ -10,10 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useAuth } from '../../../auth/AuthContext.jsx';
+import HotelForm from './HotelForm.jsx';
+import axios from 'axios';
 
 export default function HotelLists() {
   const [hotels, setHotels] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingHotel, setEditingHotel] = useState(null);
+  console.log(hotels);
 
   const formatTime = (dateString) => {
     if (!dateString) return '';
@@ -30,8 +36,28 @@ export default function HotelLists() {
       .catch((err) => console.error(err));
   }, []);
 
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   const filteredHotels =
     categoryFilter === 'all' ? hotels : hotels.filter((hotel) => hotel.category === categoryFilter);
+
+  const handleDelete = async (id) => {
+    if (!id) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/tourism/hotels/${id}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`, // <-- send the token
+        },
+      });
+
+      setHotels((prev) => prev.filter((h) => h.id !== id));
+      console.log(`Hotel ${id} deleted`);
+    } catch (error) {
+      console.error('Delete failed:', error);
+    }
+  };
 
   return (
     <div className='min-h-screen bg-gray-50 p-2'>
@@ -41,25 +67,62 @@ export default function HotelLists() {
             <LucideHouse className='w-10 h-10 text-2xl text-blue-600 bg-blue-200 p-2 rounded-xl' />
             <h1 className='text-3xl font-bold text-gray-900 m-0 leading-none'>Hotels</h1>
           </div>
-          <button
-            onClick={() => {
-              window.location.href = '/add-hotel';
-            }}
-            className='mb-6 px-4 py-2 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white rounded hover:bg-blue-700 transition'
-          >
-            <LucidePlus className='w-4 h-4 inline-block mr-2' />
-            Add New Hotel
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setIsFormOpen(true);
+              }}
+              className='mb-6 px-4 py-2 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white rounded hover:bg-blue-700 transition'
+            >
+              <LucidePlus className='w-4 h-4 inline-block mr-2' />
+              Add New Hotel
+            </button>
+          )}
         </div>
+        {isFormOpen && (
+          <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60'>
+            <div className='relative bg-white p-8 pt-4 rounded-xl shadow-lg w-2/5 max-h-[80vh] flex flex-col'>
+              <X
+                className='absolute -top-4 -right-4 w-8 h-8 cursor-pointer text-red-500 bg-white rounded-full p-1 shadow'
+                onClick={() => setIsFormOpen(false)}
+              />
+              <h1 className='text-start text-black font-black text-2xl pt-4 pb-4'>
+                {editingHotel ? 'Edit Hotel' : 'Add Hotel'}
+              </h1>
+
+              <div className='overflow-y-auto pr-2 scrollbar-thin'>
+                <HotelForm
+                  onClose={() => {
+                    setIsFormOpen(false);
+                    setEditingHotel(null); // reset after closing
+                  }}
+                  hotel={editingHotel} // pass current hotel info
+                  onSaved={(updatedHotel) => {
+                    if (editingHotel) {
+                      // update hotel in list
+                      setHotels((prev) =>
+                        prev.map((h) => (h.id === updatedHotel.id ? updatedHotel : h)),
+                      );
+                    } else {
+                      // add new hotel
+                      setHotels((prev) => [...prev, updatedHotel]);
+                    }
+                    setIsFormOpen(false);
+                    setEditingHotel(null);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className='flex w-full mb-2 gap-6'>
           <div className='flex pb-7 w-full relative'>
             <LucideSearch className='absolute w-5 h-5 ml-3 mt-3 text-gray-400' />
             <Input
               onInput={(e) => {
                 const value = e.target.value.toLowerCase();
-                setHotels(
-                  hotels.filter((hotel) => hotel.name.toLowerCase().includes(value)),
-                );
+                setHotels(hotels.filter((hotel) => hotel.name.toLowerCase().includes(value)));
               }}
               type='text'
               placeholder='Search hotels...'
@@ -96,6 +159,12 @@ export default function HotelLists() {
                 `Check-in ${formatTime(h.checkInTime)}`,
                 `Check-out ${formatTime(h.checkOutTime)}`,
               ]}
+              onView={() => console.log('view', h.id)}
+              onEdit={() => {
+                setEditingHotel(h);
+                setIsFormOpen(true);
+              }}
+              onDelete={() => handleDelete(h.id)}
             />
           ))}
         </div>

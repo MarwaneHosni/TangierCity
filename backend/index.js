@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
 
@@ -24,6 +25,8 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
+
+app.use("/auth", authRoutes);
 
 app.use('/api/tourism/hotels', hotelRoutes.default);
 app.use('/api/tourism/restaurants', restaurantRoutes.default);
